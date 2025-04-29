@@ -71,8 +71,8 @@
         descriptionMap[key] = desc;
       });
   
-      // Загружаем кэш из sessionStorage
-      const rawCache = sessionStorage.getItem('priceCache');
+      // Загружаем кэш из localStorage
+      const rawCache = localStorage.getItem('priceCache');
       const priceCache = rawCache ? JSON.parse(rawCache) : {};
   
       const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -81,7 +81,7 @@
       async function getPrice(url) {
         try {
           // Проверка наличия кэша
-          const rawCache = sessionStorage.getItem('priceCache');
+          const rawCache = localStorage.getItem('priceCache');
           const priceCache = rawCache ? JSON.parse(rawCache) : {};
 
           if (priceCache[url]) {
@@ -104,7 +104,7 @@
             
             // Сохраняем данные в кэш
             priceCache[url] = priceData;
-            sessionStorage.setItem('priceCache', JSON.stringify(priceCache));
+            localStorage.setItem('priceCache', JSON.stringify(priceCache));
 
             return priceData;
           }
@@ -135,7 +135,6 @@
         const priceUrl = `https://steamcommunity.com/market/priceoverview/?currency=1&appid=${appId}&market_hash_name=${marketHashName}`;
   
         const priceData = await getPrice(priceUrl);
-        await sleep(200);
         const price = priceData?.lowest_price || 'N/A';
   
         const priceLabel = document.createElement('div');
@@ -191,7 +190,6 @@
       });
       controlPanel.appendChild(loadingLabel);
   
-      await sleep(300);
       controlPanel.removeChild(loadingLabel);
   
       const createButton = (text, background, callback) => {
@@ -221,21 +219,32 @@
       }
   
       const originalOrder = [...itemsWithPrices];
-  
-      createButton('Сортировать по цене', '#5c7e10', () => {
-        // Сортируем только те элементы, которые содержат элементы
-        itemsWithPrices.sort((a, b) => b.numericPrice - a.numericPrice);
+      
+      let sortCounter = 0;
+      const symbols = ['↑', '↓'];
+      
+      createButton(`Сортировать по цене ${symbols[sortCounter]}`, '#5c7e10', function() {
+        // Сортируем элементы в зависимости от состояния
+        itemsWithPrices.sort((a, b) => 
+          sortCounter === 0 ? b.numericPrice - a.numericPrice : a.numericPrice - b.numericPrice
+        );
+      
+        // Меняем состояние сортировки для следующего клика
+        sortCounter = 1 - sortCounter;
         
+        // Добавляем небольшую задержку, чтобы кнопка успела обновить текст
+        setTimeout(() => {
+          // Обновляем текст кнопки
+          this.textContent = `Сортировать по цене ${symbols[sortCounter]}`;
+        }, 50);
+      
         // Очищаем контейнер перед добавлением отсортированных элементов
         container.innerHTML = '';
         
-        // Добавляем отсортированные элементы
-        itemsWithPrices.forEach(({ holder }) => {
-          if (holder) {  // Проверяем, что элемент существует
-            container.appendChild(holder);
-          }
-        });
+        // Добавляем отсортированные элементы в контейнер
+        itemsWithPrices.forEach(({ holder }) => holder && container.appendChild(holder));
       });
+      
   
       createButton('Сбросить сортировку', '#7a0f0f', () => {
         // Очищаем контейнер перед добавлением элементов в исходном порядке
