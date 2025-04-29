@@ -1,13 +1,10 @@
-chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
-    if (request.action === 'getPrice') {
-      try {
-        const response = await fetch(request.url);
-        const data = await response.json();
-        sendResponse({ success: true, data });
-      } catch (error) {
-        sendResponse({ success: false, error: error.message });
-      }
-      return true;
-    }
-  });
-  
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'getPrice') {
+    fetch(request.url)
+      .then(res => res.json())
+      .then(data => sendResponse({ success: true, data }))
+      .catch(err => sendResponse({ success: false, error: err.message }));
+
+    return true;
+  }
+});

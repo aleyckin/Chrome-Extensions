@@ -77,26 +77,26 @@
   
       const sleep = ms => new Promise(r => setTimeout(r, ms));
   
-      const getPrice = async (url) => {
-        if (priceCache[url]) {
-          console.log('💾 Цена из кэша:', url);
-          return priceCache[url];
+      async function getPrice(url) {
+        try {
+          const response = await chrome.runtime.sendMessage({ action: 'getPrice', url });
+      
+          // Защитная проверка на undefined
+          if (!response) {
+            throw new Error("Ответ от background.js отсутствует");
+          }
+      
+          if (!response.success) {
+            throw new Error(response.error || "Неизвестная ошибка при получении данных");
+          }
+      
+          return response.data;
+      
+        } catch (e) {
+          console.warn('❌ Ошибка получения цены:', e);
+          return null;
         }
-  
-        console.log('📦 Отправка запроса на цену:', url);
-        return new Promise(resolve => {
-          chrome.runtime.sendMessage({ action: 'getPrice', url }, (response) => {
-            console.log('💰 Ответ от background-скрипта:', response);
-            if (response?.success) {
-              priceCache[url] = response.data;
-              sessionStorage.setItem('priceCache', JSON.stringify(priceCache));
-              resolve(response.data);
-            } else {
-              resolve(null);
-            }
-          });
-        });
-      };
+      }
   
       const itemsWithPrices = [];
   
@@ -118,7 +118,7 @@
         const priceUrl = `https://steamcommunity.com/market/priceoverview/?currency=1&appid=${appId}&market_hash_name=${marketHashName}`;
   
         const priceData = await getPrice(priceUrl);
-        await sleep(200); // защита от дублирующихся запросов
+        await sleep(200);
         const price = priceData?.lowest_price || 'N/A';
   
         const priceLabel = document.createElement('div');
