@@ -24,17 +24,31 @@
         return;
       }
   
-      const steamId =
-        window.location.href.match(/\/profiles\/(\d+)/)?.[1] ||
-        (typeof g_rgProfileData !== 'undefined' && g_rgProfileData.steamid) ||
-        null;
-  
-      if (!steamId) {
-        console.warn('❌ Не удалось определить Steam ID');
-        return;
+    async function getSteamID64(vanityUrl) {
+      try {
+        // 1. Загружаем XML-страницу
+        const response = await fetch(`https://steamcommunity.com/id/${vanityUrl}/?xml=1`);
+        const xmlText = await response.text();
+        
+        // 2. Парсим XML
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+        
+        // 3. Извлекаем steamID64
+        const steamID64 = xmlDoc.querySelector('steamID64').textContent;
+        
+        return steamID64 || null;
+      } catch (error) {
+        console.error('Ошибка при парсинге:', error);
+        return null;
       }
+    }
+
   
-      console.log('👤 Steam ID:', steamId);
+
+    const steamId =
+    ( (typeof g_rgProfileData !== 'undefined' && g_rgProfileData.steamid) || window.location.href.match(/\/profiles\/(\d+)/)?.[1]) ||
+     (typeof g_steamID !== 'undefined' && g_steamID) || await getSteamID64(window.location.href.match(/\/id\/([^\/]+)/)?.[1]) ||null;
   
       const inventoryUrl = `https://steamcommunity.com/inventory/${steamId}/${appId}/${contextId}?l=english&count=5000`;
       console.log('🌐 Загружается инвентарь:', inventoryUrl);
