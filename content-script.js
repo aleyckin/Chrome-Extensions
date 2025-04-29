@@ -77,21 +77,38 @@
   
       const sleep = ms => new Promise(r => setTimeout(r, ms));
   
+      // Получаем данные из кэша или API
       async function getPrice(url) {
         try {
-          const response = await chrome.runtime.sendMessage({ action: 'getPrice', url });
-      
-          // Защитная проверка на undefined
-          if (!response) {
-            throw new Error("Ответ от background.js отсутствует");
+          // Проверка наличия кэша
+          const rawCache = sessionStorage.getItem('priceCache');
+          const priceCache = rawCache ? JSON.parse(rawCache) : {};
+
+          if (priceCache[url]) {
+            console.log('💾 Цена найдена в кэше:', priceCache[url]);
+            return priceCache[url];
+          } else {
+            console.log('📡 Обращение к API для получения данных');
+            const response = await chrome.runtime.sendMessage({ action: 'getPrice', url });
+            
+            // Защитная проверка на undefined
+            if (!response) {
+              throw new Error("Ответ от background.js отсутствует");
+            }
+
+            if (!response.success) {
+              throw new Error(response.error || "Неизвестная ошибка при получении данных");
+            }
+
+            const priceData = response.data;
+            
+            // Сохраняем данные в кэш
+            priceCache[url] = priceData;
+            sessionStorage.setItem('priceCache', JSON.stringify(priceCache));
+
+            return priceData;
           }
-      
-          if (!response.success) {
-            throw new Error(response.error || "Неизвестная ошибка при получении данных");
-          }
-      
-          return response.data;
-      
+
         } catch (e) {
           console.warn('❌ Ошибка получения цены:', e);
           return null;
