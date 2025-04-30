@@ -5,10 +5,12 @@
     "description": "Отображает цену предметов в инвентаре Steam и сортирует их по стоимости.",
     "permissions": [
       "scripting",
-      "activeTab"
+      "activeTab",
+      "storage"
     ],
     "host_permissions": [
-      "https://steamcommunity.com/*"
+        "https://steamcommunity.com/*",
+        "https://steamcommunity.com/market/*"
     ],
     "background": {
       "service_worker": "background.js"
@@ -18,7 +20,7 @@
         "matches": [
             "https://steamcommunity.com/id/*/inventory*",
             "https://steamcommunity.com/profiles/*/inventory*"
-            ],
+        ],
         "js": ["content-script.js"]
       }
     ]
