@@ -1,14 +1,24 @@
 {
-    "manifest_version": 2,
-    "name": "Steam Font Changer",
+    "name": "Steam Price Sorter",
     "version": "1.0",
-    "description": "Изменяет шрифты на странице инвентаря Steam и логирует сообщение в консоль",
+    "manifest_version": 3,
+    "description": "Отображает цену предметов в инвентаре Steam и сортирует их по стоимости.",
     "permissions": [
-      "https://steamcommunity.com/profiles/76561198263667201/inventory*"
+      "scripting",
+      "activeTab"
     ],
+    "host_permissions": [
+      "https://steamcommunity.com/*"
+    ],
+    "background": {
+      "service_worker": "background.js"
+    },
     "content_scripts": [
       {
-        "matches": ["https://steamcommunity.com/profiles/76561198263667201/inventory*"],
+        "matches": [
+            "https://steamcommunity.com/id/*/inventory*",
+            "https://steamcommunity.com/profiles/*/inventory*"
+            ],
         "js": ["content-script.js"]
       }
     ]
