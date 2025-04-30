@@ -1,0 +1,16 @@
+{
+    "manifest_version": 2,
+    "name": "Steam Font Changer",
+    "version": "1.0",
+    "description": "Изменяет шрифты на странице инвентаря Steam и логирует сообщение в консоль",
+    "permissions": [
+      "https://steamcommunity.com/profiles/76561198263667201/inventory*"
+    ],
+    "content_scripts": [
+      {
+        "matches": ["https://steamcommunity.com/profiles/76561198263667201/inventory*"],
+        "js": ["content-script.js"]
+      }
+    ]
+  }
+  
