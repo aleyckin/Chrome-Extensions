@@ -298,6 +298,8 @@
       controlPanel.appendChild(typeFilterPanel);
 
       const checkboxStates = {};
+      const checkboxes = {};
+      let allChecked = false;
 
       typeMap.forEach((holders, type) => {
         const label = document.createElement('label');
@@ -310,6 +312,8 @@
         checkbox.checked = true;
         checkboxStates[type] = true;
 
+        checkboxes[type] = checkbox;
+
         checkbox.addEventListener('change', () => {
           checkboxStates[type] = checkbox.checked;
           holders.forEach(h => {
@@ -319,8 +323,43 @@
 
         label.appendChild(checkbox);
         label.append(` ${type}`);
-        typeFilterPanel.appendChild(label);
+        typeFilterPanel.appendChild(label);;
       });
+
+      // Обёртка для кнопки
+      const toggleContainer = document.createElement('div');
+      toggleContainer.style.marginBottom = '10px';
+
+      const toggleAllBtn = document.createElement('button');
+      toggleAllBtn.textContent = 'Выбрать все';
+      toggleAllBtn.style.margin = '10px';
+      toggleAllBtn.style.padding = '5px 10px';
+      toggleAllBtn.style.cursor = 'pointer';
+
+      toggleContainer.appendChild(toggleAllBtn);
+      typeFilterPanel.prepend(toggleContainer);
+
+      allChecked = Object.values(checkboxes).every(cb => cb.checked);
+      toggleAllBtn.textContent = allChecked ? 'Снять все' : 'Выбрать все';
+
+      toggleAllBtn.addEventListener('click', () => {
+        allChecked = !allChecked;
+
+        Object.entries(checkboxes).forEach(([type, checkbox]) => {
+          checkbox.checked = allChecked;
+          checkboxStates[type] = allChecked;
+
+          const holders = typeMap.get(type);
+          if (holders) {
+            holders.forEach(h => {
+              h.style.display = allChecked ? '' : 'none';
+            });
+          }
+        });
+
+        toggleAllBtn.textContent = allChecked ? 'Снять все' : 'Выбрать все';
+      });
+
 
       const totalPrice = itemsWithPrices.reduce((sum, item) => {
         let price = item.numericPrice;
