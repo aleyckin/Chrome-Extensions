@@ -257,7 +257,101 @@
           }
         });
       });
-  
+      
+      // Сбор всех типов
+      const typeMap = new Map();
+
+      itemsWithPrices.forEach(({ holder }) => {
+        const itemDiv = holder.querySelector('.item');
+        const link = holder.querySelector('a.inventory_item_link');
+        const assetKey = link && link.href.startsWith('#')
+          ? link.href.slice(link.href.indexOf('#') + 1)
+          : itemDiv.id;
+
+        const assetId = assetKey.split('_')[2];
+        const descriptionKey = assetMap[assetId];
+        const description = descriptionMap[descriptionKey];
+        if (!description) return;
+
+        const type = description.type || 'Other';
+
+        if (!typeMap.has(type)) {
+          typeMap.set(type, []);
+        }
+
+        typeMap.get(type).push(holder);
+      });
+
+      // UI-фильтр по типу
+      const typeFilterPanel = document.createElement('div');
+      Object.assign(typeFilterPanel.style, {
+        padding: '10px',
+        backgroundColor: '#222',
+        borderRadius: '5px',
+        color: 'white',
+        fontSize: '13px',
+        maxWidth: '200px',
+        overflowY: 'auto',
+        maxHeight: '300px'
+      });
+      typeFilterPanel.innerHTML = '<b>Фильтр по типу:</b><br>';
+      controlPanel.appendChild(typeFilterPanel);
+
+      const checkboxStates = {};
+
+      typeMap.forEach((holders, type) => {
+        const label = document.createElement('label');
+        label.style.display = 'block';
+        label.style.cursor = 'pointer';
+        label.style.marginBottom = '5px';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = true;
+        checkboxStates[type] = true;
+
+        checkbox.addEventListener('change', () => {
+          checkboxStates[type] = checkbox.checked;
+          holders.forEach(h => {
+            h.style.display = checkbox.checked ? '' : 'none';
+          });
+        });
+
+        label.appendChild(checkbox);
+        label.append(` ${type}`);
+        typeFilterPanel.appendChild(label);
+      });
+
+      const totalPrice = itemsWithPrices.reduce((sum, item) => {
+        let price = item.numericPrice;
+      
+        if (typeof price === 'string') {
+          // Удаляем всё, кроме цифр, точки и запятой
+          price = price.replace(/[^\d.,]/g, '');
+      
+          // Заменяем запятую на точку, если есть
+          price = price.replace(',', '.');
+      
+          // Преобразуем в число
+          price = parseFloat(price);
+        }
+      
+        // Если число валидное — добавляем
+        return !isNaN(price) ? sum + price : sum;
+      }, 0);
+
+       // Создаем элемент для вывода общей стоимости
+       const totalPriceDiv = document.createElement('div');
+       Object.assign(totalPriceDiv.style, {
+         marginTop: '10px',
+         fontWeight: 'bold',
+         fontSize: '14px',
+         color: '#4caf50'
+       });
+       totalPriceDiv.textContent = `💲 Общая стоимость: $${totalPrice.toFixed(2)}`;
+ 
+       controlPanel.appendChild(totalPriceDiv);
+
       console.log('🏁 Интерфейс управления добавлен');
     } catch (err) {
       console.error('❌ Ошибка выполнения content-script:', err);
