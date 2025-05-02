@@ -93,7 +93,6 @@
     controlPanel.appendChild(button);
   }
   function createResetButton(controlPanel, itemsWithPrices, container, originalOrder) {
-    console.log(originalOrder);
     const button = document.createElement("button");
     button.textContent = "\u0421\u0431\u0440\u043E\u0441\u0438\u0442\u044C \u0441\u043E\u0440\u0442\u0438\u0440\u043E\u0432\u043A\u0443";
     button.style.marginLeft = "10px";
@@ -104,6 +103,69 @@
       });
     });
     controlPanel.appendChild(button);
+  }
+  function createTypeFilter(typeMap, controlPanel) {
+    const typeFilterPanel = document.createElement("div");
+    Object.assign(typeFilterPanel.style, {
+      padding: "10px",
+      backgroundColor: "#222",
+      borderRadius: "5px",
+      color: "white",
+      fontSize: "13px",
+      maxWidth: "200px",
+      overflowY: "auto",
+      maxHeight: "300px"
+    });
+    typeFilterPanel.innerHTML = "<b>\u0424\u0438\u043B\u044C\u0442\u0440 \u043F\u043E \u0442\u0438\u043F\u0443:</b><br>";
+    controlPanel.appendChild(typeFilterPanel);
+    const checkboxStates = {};
+    const checkboxes = {};
+    let allChecked = false;
+    typeMap.forEach((holders, type) => {
+      const label = document.createElement("label");
+      label.style.display = "block";
+      label.style.cursor = "pointer";
+      label.style.marginBottom = "5px";
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = true;
+      checkboxStates[type] = true;
+      checkboxes[type] = checkbox;
+      checkbox.addEventListener("change", () => {
+        checkboxStates[type] = checkbox.checked;
+        holders.forEach((h) => {
+          h.style.display = checkbox.checked ? "" : "none";
+        });
+      });
+      label.appendChild(checkbox);
+      label.append(` ${type}`);
+      typeFilterPanel.appendChild(label);
+    });
+    const toggleContainer = document.createElement("div");
+    toggleContainer.style.marginBottom = "10px";
+    const toggleAllBtn = document.createElement("button");
+    toggleAllBtn.textContent = "\u0412\u044B\u0431\u0440\u0430\u0442\u044C \u0432\u0441\u0435";
+    toggleAllBtn.style.margin = "10px";
+    toggleAllBtn.style.padding = "5px 10px";
+    toggleAllBtn.style.cursor = "pointer";
+    toggleContainer.appendChild(toggleAllBtn);
+    typeFilterPanel.prepend(toggleContainer);
+    allChecked = Object.values(checkboxes).every((cb) => cb.checked);
+    toggleAllBtn.textContent = allChecked ? "\u0421\u043D\u044F\u0442\u044C \u0432\u0441\u0435" : "\u0412\u044B\u0431\u0440\u0430\u0442\u044C \u0432\u0441\u0435";
+    toggleAllBtn.addEventListener("click", () => {
+      allChecked = !allChecked;
+      Object.entries(checkboxes).forEach(([type, checkbox]) => {
+        checkbox.checked = allChecked;
+        checkboxStates[type] = allChecked;
+        const holders = typeMap.get(type);
+        if (holders) {
+          holders.forEach((h) => {
+            h.style.display = allChecked ? "" : "none";
+          });
+        }
+      });
+      toggleAllBtn.textContent = allChecked ? "\u0421\u043D\u044F\u0442\u044C \u0432\u0441\u0435" : "\u0412\u044B\u0431\u0440\u0430\u0442\u044C \u0432\u0441\u0435";
+    });
   }
 
   // src/utils.js
@@ -190,67 +252,7 @@
       const originalOrder = itemsWithPrices.map((item) => __spreadValues({}, item));
       createSortButton(controlPanel, itemsWithPrices, container, sortCounter);
       createResetButton(controlPanel, itemsWithPrices, container, originalOrder);
-      const typeFilterPanel = document.createElement("div");
-      Object.assign(typeFilterPanel.style, {
-        padding: "10px",
-        backgroundColor: "#222",
-        borderRadius: "5px",
-        color: "white",
-        fontSize: "13px",
-        maxWidth: "200px",
-        overflowY: "auto",
-        maxHeight: "300px"
-      });
-      typeFilterPanel.innerHTML = "<b>\u0424\u0438\u043B\u044C\u0442\u0440 \u043F\u043E \u0442\u0438\u043F\u0443:</b><br>";
-      controlPanel.appendChild(typeFilterPanel);
-      const checkboxStates = {};
-      const checkboxes = {};
-      let allChecked = false;
-      typeMap.forEach((holders2, type) => {
-        const label = document.createElement("label");
-        label.style.display = "block";
-        label.style.cursor = "pointer";
-        label.style.marginBottom = "5px";
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.checked = true;
-        checkboxStates[type] = true;
-        checkboxes[type] = checkbox;
-        checkbox.addEventListener("change", () => {
-          checkboxStates[type] = checkbox.checked;
-          holders2.forEach((h) => {
-            h.style.display = checkbox.checked ? "" : "none";
-          });
-        });
-        label.appendChild(checkbox);
-        label.append(` ${type}`);
-        typeFilterPanel.appendChild(label);
-      });
-      const toggleContainer = document.createElement("div");
-      toggleContainer.style.marginBottom = "10px";
-      const toggleAllBtn = document.createElement("button");
-      toggleAllBtn.textContent = "\u0412\u044B\u0431\u0440\u0430\u0442\u044C \u0432\u0441\u0435";
-      toggleAllBtn.style.margin = "10px";
-      toggleAllBtn.style.padding = "5px 10px";
-      toggleAllBtn.style.cursor = "pointer";
-      toggleContainer.appendChild(toggleAllBtn);
-      typeFilterPanel.prepend(toggleContainer);
-      allChecked = Object.values(checkboxes).every((cb) => cb.checked);
-      toggleAllBtn.textContent = allChecked ? "\u0421\u043D\u044F\u0442\u044C \u0432\u0441\u0435" : "\u0412\u044B\u0431\u0440\u0430\u0442\u044C \u0432\u0441\u0435";
-      toggleAllBtn.addEventListener("click", () => {
-        allChecked = !allChecked;
-        Object.entries(checkboxes).forEach(([type, checkbox]) => {
-          checkbox.checked = allChecked;
-          checkboxStates[type] = allChecked;
-          const holders2 = typeMap.get(type);
-          if (holders2) {
-            holders2.forEach((h) => {
-              h.style.display = allChecked ? "" : "none";
-            });
-          }
-        });
-        toggleAllBtn.textContent = allChecked ? "\u0421\u043D\u044F\u0442\u044C \u0432\u0441\u0435" : "\u0412\u044B\u0431\u0440\u0430\u0442\u044C \u0432\u0441\u0435";
-      });
+      createTypeFilter(typeMap, controlPanel);
       const totalPrice = calculateTotalPrice(itemsWithPrices);
       const totalPriceDiv = document.createElement("div");
       totalPriceDiv.textContent = `\u{1F4B2} \u041E\u0431\u0449\u0430\u044F \u0441\u0442\u043E\u0438\u043C\u043E\u0441\u0442\u044C: $${totalPrice.toFixed(2)}`;
