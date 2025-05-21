@@ -13,30 +13,88 @@ export function createControlPanel() {
     return controlPanel;
   }
   
-  export function createSortButton(controlPanel, itemsWithPrices, container, sortCounter) {
+  export function createSortButton(controlPanel, allItems, container, sortCounter) {
     const button = document.createElement('button');
     button.textContent = `Сортировать по цене ↑`;
+
     button.addEventListener('click', () => {
-      itemsWithPrices.sort((a, b) => sortCounter === 0 ? b.numericPrice - a.numericPrice : a.numericPrice - b.numericPrice);
+      const itemsWithPrices = allItems.filter(item => typeof item.numericPrice === 'number');
+      const itemsWithoutPrices = allItems.filter(item => typeof item.numericPrice !== 'number');
+
+      itemsWithPrices.sort((a, b) => {
+        const priceA = typeof a.numericPrice === 'number' ? a.numericPrice : Infinity;
+        const priceB = typeof b.numericPrice === 'number' ? b.numericPrice : Infinity;
+        return sortCounter === 0 ? priceB - priceA : priceA - priceB;
+      });
+
       sortCounter = 1 - sortCounter;
-      container.innerHTML = '';
-      itemsWithPrices.forEach(({ holder }) => container.appendChild(holder));
+      button.textContent = sortCounter === 0 ? `Сортировать по цене ↑` : `Сортировать по цене ↓`;
+
+      const sortedItems = [...itemsWithPrices, ...itemsWithoutPrices];
+
+      const pages = [...document.querySelectorAll('.inventory_page')]
+        .filter(el => el.tagName.toLowerCase() === 'div');
+      const PAGE_SIZE = 25;
+
+  
+
+      // Очистить все существующие страницы
+      pages.forEach(page => page.innerHTML = '');
+
+      // Перекидываем отсортированные элементы обратно на существующие страницы
+      sortedItems.forEach(({ holder }, index) => {
+        const pageIndex = Math.floor(index / PAGE_SIZE);
+        const page = pages[pageIndex];
+        if (page) {
+          page.appendChild(holder);
+        } else {
+          console.warn(`⚠ Страница ${pageIndex} не найдена для предмета №${index}`);
+        }
+      });
+
+      console.log('✅ Сортировка завершена. Всего предметов:', sortedItems.length);
     });
+
     controlPanel.appendChild(button);
   }
+
   
-  export function createResetButton(controlPanel, itemsWithPrices, container, originalOrder) {
+  export function createResetButton(controlPanel, originalOrder, container) {
     const button = document.createElement('button');
     button.textContent = 'Сбросить сортировку';
     button.style.marginLeft = '10px';
+
     button.addEventListener('click', () => {
-      container.innerHTML = ''; 
-      originalOrder.forEach(({ holder }) => {
-        if (holder) container.appendChild(holder);
+      const PAGE_SIZE = 25;
+      // Получаем существующие страницы из контейнера
+      const pages = [...document.querySelectorAll('.inventory_page')]
+        .filter(el => el.tagName.toLowerCase() === 'div');
+
+      // Очищаем содержимое каждой страницы
+      pages.forEach(page => page.innerHTML = '');
+
+      // Распределяем элементы из originalOrder по страницам
+      originalOrder.forEach(({ holder }, index) => {
+        const pageIndex = Math.floor(index / PAGE_SIZE);
+        const page = pages[pageIndex];
+        if (page && holder) {
+          page.appendChild(holder);
+        } else {
+          console.warn(`⚠ Страница ${pageIndex} не найдена для предмета №${index}`);
+        }
       });
+
+      // Отобразить только первую страницу, остальные скрыть
+      pages.forEach((page, i) => {
+        page.style.display = i === 0 ? 'block' : 'none';
+      });
+
+      console.log('🔄 Сортировка сброшена, элементы возвращены в исходный порядок');
     });
+
     controlPanel.appendChild(button);
   }
+
   
   export function createResetCacheButton(controlPanel, priceCache) {
     const button = document.createElement('button');
