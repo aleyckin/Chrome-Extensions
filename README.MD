@@ -6,6 +6,6 @@ npm i
 ```
 2. Прописать команду 
 ```bash
-node.build.js
+node build.js
 ```
 - После этого у вас появится папка и скрипт внутри неё dist/content-script.js
