@@ -1,5 +1,5 @@
 import { waitForItems, getSteamID64, getInventory, getPrice } from './apiUtils.js';
-import { createControlPanel, createSortButton, createResetButton, createTypeFilter } from './uiUtils.js';
+import { createControlPanel, createSortButton, createResetButton, createTypeFilter, createResetCacheButton} from './uiUtils.js';
 import { calculateTotalPrice } from './utils.js';
 
 (async () => {
@@ -110,9 +110,11 @@ import { calculateTotalPrice } from './utils.js';
 
     createSortButton(controlPanel, itemsWithPrices, container, sortCounter);
     createResetButton(controlPanel, itemsWithPrices, container, originalOrder);
+    createResetCacheButton(controlPanel, priceCache);
 
     // Фильтрация по типу
     createTypeFilter(typeMap, controlPanel);
+
 
     // Подсчёт общей стоимости
     const totalPrice = calculateTotalPrice(itemsWithPrices);

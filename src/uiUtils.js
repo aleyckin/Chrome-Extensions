@@ -38,6 +38,32 @@ export function createControlPanel() {
     controlPanel.appendChild(button);
   }
   
+  export function createResetCacheButton(controlPanel, priceCache) {
+    const button = document.createElement('button');
+    button.textContent = 'Сбросить кэш';
+    button.style.padding = '10px 15px';
+    button.style.backgroundColor = '#f44336';
+    button.style.color = '#fff';
+    button.style.border = 'none';
+    button.style.borderRadius = '5px';
+    button.style.cursor = 'pointer';
+
+    button.addEventListener('click', () => {
+      localStorage.removeItem('priceCache');
+
+      for (const key in priceCache) {
+        delete priceCache[key];
+      }
+
+      alert('Кэш цен успешно сброшен ✅');
+      location.reload();
+    });
+
+    controlPanel.appendChild(button);
+  }
+
+
+
   export function createTypeFilter(typeMap, controlPanel) {
     const typeFilterPanel = document.createElement('div');
     Object.assign(typeFilterPanel.style, {
