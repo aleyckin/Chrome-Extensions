@@ -15,11 +15,12 @@ import { calculateTotalPrice } from './utils.js';
     }
 
     const steamId =
-      (typeof g_rgProfileData !== 'undefined' && g_rgProfileData.steamid) ||
       window.location.href.match(/\/profiles\/(\d+)/)?.[1] ||
       (typeof g_steamID !== 'undefined' && g_steamID) ||
       await getSteamID64(window.location.href.match(/\/id\/([^\/]+)/)?.[1]) ||
       null;
+    
+    await new Promise((r) => setTimeout(r, 3000))
 
     const inventory = await getInventory(steamId, appId, contextId);
     if (!inventory) {
@@ -71,7 +72,7 @@ import { calculateTotalPrice } from './utils.js';
       typeMap.get(type).push(holder);
 
       const marketHashName = encodeURIComponent(description.market_hash_name);
-      const priceUrl = `https://steamcommunity.com/market/priceoverview/?currency=1&appid=${appId}&market_hash_name=${marketHashName}`;
+      const priceUrl = `https://steamcommunity.com/market/priceoverview/?country=RU&currency=5&appid=${appId}&market_hash_name=${marketHashName}`;
 
       const priceData = await getPrice(priceUrl, priceCache);
       const price = priceData?.lowest_price || 'N/A';
@@ -97,7 +98,7 @@ import { calculateTotalPrice } from './utils.js';
       holder.style.position = 'relative';
       holder.appendChild(priceLabel);
 
-      const numericPrice = parseFloat(price.replace(/[^0-9.]/g, '')) || 0;
+      const numericPrice = parseFloat(price.replace(/[^0-9,]/g, '')) || 0;
       itemsWithPrices.push({ holder, numericPrice });
     }
 
@@ -118,7 +119,7 @@ import { calculateTotalPrice } from './utils.js';
     const totalPrice = calculateTotalPrice(itemsWithPrices);
 
     const totalPriceDiv = document.createElement('div');
-    totalPriceDiv.textContent = `💲 Общая стоимость: $${totalPrice.toFixed(2)}`;
+    totalPriceDiv.textContent = ` Общая стоимость: ₽${totalPrice.toFixed(2)}`;
     controlPanel.appendChild(totalPriceDiv);
 
     console.log('🏁 Интерфейс управления добавлен');
