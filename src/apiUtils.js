@@ -48,6 +48,7 @@ export async function waitForItems() {
       return priceData;
     }
   }
+  
   export async function getItemFloatInfo(marketListingUrl) {
     try {
         // 1. Загружаем страницу
@@ -60,7 +61,7 @@ export async function waitForItems() {
         const doc = parser.parseFromString(html, 'text/html');
 
         // 3. Ищем ссылку в .item_actions
-        const itemActions = document.querySelector('.item_actions');
+        const itemActions = document.querySelector('.market_listing_row_action')
         if (!itemActions) throw new Error('❌ Не найден элемент .item_actions');
 
         // 4. Ищем все ссылки внутри элемента
@@ -89,10 +90,10 @@ async function fetchFloatData(inspectLink) {
     chrome.runtime.sendMessage(
       {action: "getFloat", inspectLink},
       (response) => {
-        if (response?.iteminfo) {
+        if (response?.success && response.float !== undefined && response.seed !== undefined) {
           resolve({
-            float: response.iteminfo.floatvalue,
-            seed: response.iteminfo.paintseed
+            float: response.float,
+            seed: response.seed
           });
         } else {
           console.error('Float API error:', response?.error);
@@ -103,4 +104,3 @@ async function fetchFloatData(inspectLink) {
   });
 }
 
-  

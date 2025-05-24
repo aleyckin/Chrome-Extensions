@@ -12,9 +12,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   
   if (request.action === 'getFloat') {
     // Обработка запроса float значений
-    fetch(`https://floats.steaminventoryhelper.com/?url=${encodeURIComponent(request.inspectLink)}`)
+    console.log('Получен запрос на получение float для ссылки:', request.inspectLink);
+    const floatApiUrl = `https://floats.steaminventoryhelper.com/?url=${request.inspectLink}`;
+    fetch(floatApiUrl)
       .then(response => {
-        if (!response.ok) throw new Error('API error');
+        console.log('Float API URL:', floatApiUrl);
+        console.log('Float API status:', response.status);
+        if (!response.ok) {
+          return response.text().then(text => {
+            console.error('Float API response text:', text);
+            throw new Error('API error');
+          });
+        }
         return response.json();
       })
       .then(data => {
@@ -33,6 +42,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
       });
       
-    return true; // Необходимо для асинхронного ответа
+    return true;
   }
 });
