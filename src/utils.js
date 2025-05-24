@@ -38,7 +38,7 @@ export async function renderPriceForHolder(holder, assetMap, descriptionMap, app
   typeMap.get(type).push(holder);
 
   const marketHashName = encodeURIComponent(description.market_hash_name);
-  const priceUrl = `https://steamcommunity.com/market/priceoverview/?currency=1&appid=${appId}&market_hash_name=${marketHashName}`;
+  const priceUrl = `https://steamcommunity.com/market/priceoverview/?country=RU&currency=5&appid=${appId}&market_hash_name=${marketHashName}`;
 
   const priceData = await getPrice(priceUrl, priceCache);
   const price = priceData?.lowest_price || 'N/A';
@@ -64,7 +64,7 @@ export async function renderPriceForHolder(holder, assetMap, descriptionMap, app
   holder.style.position = 'relative';
   holder.appendChild(priceLabel);
 
-  const numericPrice = parseFloat(price.replace(/[^0-9.]/g, '')) || 0;
+  const numericPrice = parseFloat(price.replace(/[^0-9,]/g, '')) || 0;
   itemsWithPrices.push({ holder, numericPrice });
 }
 
