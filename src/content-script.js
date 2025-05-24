@@ -15,11 +15,12 @@ import { renderPriceForHolder, renderPricesOnPage, calculateTotalPrice } from '.
     }
 
     const steamId =
-      (typeof g_rgProfileData !== 'undefined' && g_rgProfileData.steamid) ||
       window.location.href.match(/\/profiles\/(\d+)/)?.[1] ||
       (typeof g_steamID !== 'undefined' && g_steamID) ||
       await getSteamID64(window.location.href.match(/\/id\/([^\/]+)/)?.[1]) ||
       null;
+    
+    await new Promise((r) => setTimeout(r, 3000))
 
     const inventory = await getInventory(steamId, appId, contextId);
     if (!inventory) {
@@ -62,7 +63,7 @@ import { renderPriceForHolder, renderPricesOnPage, calculateTotalPrice } from '.
     // 💲 Общая стоимость
     let totalPrice = calculateTotalPrice(itemsWithPrices);
     const totalPriceDiv = document.createElement('div');
-    totalPriceDiv.textContent = `💲 Общая стоимость: $${totalPrice.toFixed(2)}`;
+    totalPriceDiv.textContent = ` Общая стоимость: ₽${totalPrice.toFixed(2)}`;
     controlPanel.appendChild(totalPriceDiv);
 
     console.log('🏁 Интерфейс управления добавлен');
