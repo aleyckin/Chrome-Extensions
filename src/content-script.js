@@ -1,5 +1,5 @@
-import { waitForItems, getSteamID64, getInventory, getPrice } from './apiUtils.js';
-import { createControlPanel, createSortButton, createResetButton, createTypeFilter, createResetCacheButton} from './uiUtils.js';
+import { waitForItems, getSteamID64, getInventory, getPrice, getItemFloatInfo } from './apiUtils.js';
+import { createControlPanel, createSortButton, createResetButton, createTypeFilter, createResetCacheButton, addFloatToMarketPage} from './uiUtils.js';
 import { renderPriceForHolder, renderPricesOnPage, calculateTotalPrice } from './utils.js';
 
 (async () => {
@@ -19,7 +19,7 @@ import { renderPriceForHolder, renderPricesOnPage, calculateTotalPrice } from '.
       (typeof g_steamID !== 'undefined' && g_steamID) ||
       await getSteamID64(window.location.href.match(/\/id\/([^\/]+)/)?.[1]) ||
       null;
-    
+
     await new Promise((r) => setTimeout(r, 3000))
 
     const inventory = await getInventory(steamId, appId, contextId);
@@ -77,7 +77,7 @@ import { renderPriceForHolder, renderPricesOnPage, calculateTotalPrice } from '.
             if (node.nodeType === Node.ELEMENT_NODE && node.matches('.inventory_page')) {
               await renderPricesOnPage(node, assetMap, descriptionMap, appId, priceCache, itemsWithPrices, typeMap);
               const updatedTotal = calculateTotalPrice(itemsWithPrices);
-              totalPriceDiv.textContent = `💲 Общая стоимость: $${updatedTotal.toFixed(2)}`;
+              totalPriceDiv.textContent = ` Общая стоимость: ₽${updatedTotal.toFixed(2)}`;
             }
           }
         }

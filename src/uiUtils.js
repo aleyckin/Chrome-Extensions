@@ -1,3 +1,4 @@
+import { waitForItems, getSteamID64, getInventory, getPrice, getItemFloatInfo } from './apiUtils.js';
 export function createControlPanel() {
     const controlPanel = document.createElement('div');
     Object.assign(controlPanel.style, {
@@ -94,6 +95,41 @@ export function createControlPanel() {
 
     controlPanel.appendChild(button);
   }
+
+  export async function addFloatToMarketPage() {
+    try {
+        // Получаем текущий URL страницы
+        const currentUrl = window.location.href;
+        
+        // Проверяем, что это страница предмета CS:GO
+        if (!currentUrl.includes('steamcommunity.com/market/listings/730/')) {
+            return;
+        }
+        console.log("проебали");
+        // Получаем данные о float
+        const floatInfo = await getItemFloatInfo(currentUrl);
+         console.log("проебали 2");
+        // Находим контейнер предмета (может потребоваться адаптация под текущую верстку)
+        const itemContainer = document.querySelector('.market_listing_largeimage');
+        if (!itemContainer) return;
+        
+        // Создаем элемент для отображения float
+        const floatElement = document.createElement('div');
+        floatElement.style.marginTop = '10px';
+        floatElement.style.fontSize = '14px';
+        floatElement.style.color = '#ffffff';
+        floatElement.innerHTML = `
+            <div>Float: <strong>${floatInfo.float.toFixed(8)}</strong></div>
+            <div>Seed: <strong>${floatInfo.seed}</strong></div>
+        `;
+        
+        // Добавляем элемент на страницу
+        itemContainer.appendChild(floatElement);
+        
+    } catch (error) {
+        console.error('Ошибка при добавлении float информации:', error);
+    }
+}
 
   
   export function createResetCacheButton(controlPanel, priceCache) {

@@ -1,30 +1,33 @@
 {
-    "name": "Steam Price Sorter MODULES",
-    "version": "1.0",
-    "manifest_version": 3,
-    "description": "Отображает цену предметов в инвентаре Steam и сортирует их по стоимости.",
-    "permissions": [
-      "scripting",
-      "activeTab",
-      "storage",
-      "tabs"
-    ],
-    "host_permissions": [
-        "https://steamcommunity.com/*",
-        "https://steamcommunity.com/market/*"
-    ],
-    "background": {
-      "service_worker": "background.js"
-    },
-    "content_scripts": [
-      {
-        "matches": [
-            "https://steamcommunity.com/id/*/inventory*",
-            "https://steamcommunity.com/profiles/*/inventory*"
-        ],
-        "js": ["dist/content-script.js"],
-        "type": "module"
-      }
-    ]
-  }
-  
+  "name": "Steam Price Sorter MODULES",
+  "version": "1.0",
+  "manifest_version": 3,
+  "description": "Отображает цену предметов в инвентаре Steam и сортирует их по стоимости.",
+  "permissions": [
+    "scripting",
+    "activeTab",
+    "storage",
+    "tabs",
+    "webRequest"
+  ],
+  "host_permissions": [
+    "https://steamcommunity.com/*",
+    "https://steamcommunity.com/market/*",
+    "https://floats.steaminventoryhelper.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://steamcommunity.com/id/*/inventory*",
+        "https://steamcommunity.com/profiles/*/inventory*",
+        "https://steamcommunity.com/market/listings/*"
+      ],
+      "js": ["dist/bundle.js"],
+      "type": "module"
+    }
+  ]
+}
