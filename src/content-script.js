@@ -1,4 +1,4 @@
-import { waitForItems, getSteamID64, getInventory, getPrice, getItemFloatInfo } from './apiUtils.js';
+import { waitForItems, getSteamID64, getInventory, getPrice, displayItemFloatInfo } from './apiUtils.js';
 import { createControlPanel, createSortButton, createResetButton, createTypeFilter, createResetCacheButton, addFloatToMarketPage} from './uiUtils.js';
 import { renderPriceForHolder, renderPricesOnPage, calculateTotalPrice } from './utils.js';
 
