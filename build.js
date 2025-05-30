@@ -1,10 +1,10 @@
 const esbuild = require('esbuild');
 
 esbuild.build({
-  entryPoints: ['src/main.js'], // тут твой исходный код с импортами
+  entryPoints: ['src/main.js'], 
   bundle: true,
   outfile: 'dist/bundle.js',
-  format: 'esm', // сразу запускаемый код без import
-  target: ['chrome58'], // поддержка старых браузеров
+  format: 'esm', 
+  target: ['chrome58'], 
   define: { 'process.env.NODE_ENV': '"production"' },
 }).catch(() => process.exit(1));

@@ -1,5 +1,5 @@
 import { waitForItems, getSteamID64, getInventory, getPrice, displayItemFloatInfo } from './apiUtils.js';
-import { createControlPanel, createSortButton, createResetButton, createTypeFilter, createResetCacheButton, addFloatToMarketPage} from './uiUtils.js';
+import { createControlPanel, createSortButton, createResetButton, createTypeFilter, createResetCacheButton, addFloatToMarketPage, quickSellItem} from './uiUtils.js';
 import { renderPriceForHolder, renderPricesOnPage, calculateTotalPrice } from './utils.js';
 
 (async () => {
@@ -7,6 +7,8 @@ import { renderPriceForHolder, renderPricesOnPage, calculateTotalPrice } from '.
     console.log('🟢 Скрипт запущен');
     const appId = 730;
     const contextId = 2;
+    
+    
 
     const holders = await waitForItems();
     if (!holders.length) {
@@ -59,6 +61,13 @@ import { renderPriceForHolder, renderPricesOnPage, calculateTotalPrice } from '.
     createResetButton(controlPanel, itemsWithPrices, container, originalOrder);
     createResetCacheButton(controlPanel, priceCache);
     createTypeFilter(typeMap, controlPanel);
+
+    setTimeout(() => {
+      const sessionid = document.cookie.match(/sessionid=([^;]+)/)?.[1];
+      const assetid = document.querySelector('.activeInfo').id.split('_')[2]
+      quickSellItem(assetid, appId, contextId, sessionid)
+    }, 200);
+  
 
     // 💲 Общая стоимость
     let totalPrice = calculateTotalPrice(itemsWithPrices);

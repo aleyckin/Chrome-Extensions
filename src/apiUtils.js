@@ -26,7 +26,7 @@ export async function getSteamID64(url) {
 }
 
 export async function getInventory(steamId, appId, contextId) {
-  const inventoryUrl = `https://steamcommunity.com/inventory/${steamId}/${appId}/${contextId}?l=english&count=5000`;
+  const inventoryUrl = `https://steamcommunity.com/inventory/${steamId}/${appId}/${contextId}?l=english&count=1000`;
   const inventoryResponse = await fetch(inventoryUrl);
   if (!inventoryResponse.ok) throw new Error('❌ Ошибка загрузки инвентаря');
   return await inventoryResponse.json();
@@ -49,25 +49,23 @@ export async function getPrice(url, priceCache) {
   }
 }
 
+
+
 export async function displayItemFloatInfo(marketListingUrl) {
   try {
-    // 1. Загружаем страницу
+
     const response = await fetch(marketListingUrl);
     if (!response.ok) throw new Error('❌ Ошибка загрузки страницы предмета');
     const html = await response.text();
 
-    // 2. Парсим HTML
-    //const parser = new DOMParser();
-    //const doc = parser.parseFromString(html, 'text/html');
 
-    // 3. Ищем все плашки предметов
     const items = document.querySelectorAll('#searchResultsRows > .market_listing_row');
     if (!items.length) throw new Error('❌ Не найдены предметы на странице');
 
     // 4. Обрабатываем каждый предмет
     for (const item of items) {
       try {
-        // Ищем ссылку на осмотр
+
         const inspectLinkElement = item.querySelector('a[href^="steam://rungame"]');
         if (!inspectLinkElement) continue;
 
@@ -75,20 +73,30 @@ export async function displayItemFloatInfo(marketListingUrl) {
         console.log(inspectLink);
         if (!inspectLink) continue;
 
-        // Получаем данные о float
+
         const floatData = await fetchFloatData(inspectLink);
         if (!floatData) continue;
 
         console.log(`Float: ${floatData.float.toFixed(6)} | Seed: ${floatData.seed}`)
-        // Создаем элемент для отображения float
+
         const floatInfoElement = document.createElement('div');
         floatInfoElement.className = 'float-info';
-
+        floatInfoElement.style.cssText = `
+          position: absolute;
+          bottom: 5px;
+          left: 100px;
+          color: white;
+          padding: 2px 5px;
+          font-size: 11px;
+          border-radius: 3px;
+          z-index: 10;
+        `;
         floatInfoElement.innerHTML = `
           Float: ${floatData.float.toFixed(6)} | Seed: ${floatData.seed}
         `;
 
-        // Добавляем на плашку предмета
+
+        item.style.position = 'relative';
         item.appendChild(floatInfoElement);
 
       } catch (error) {

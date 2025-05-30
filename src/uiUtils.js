@@ -221,5 +221,91 @@ export function createControlPanel() {
   
       toggleAllBtn.textContent = allChecked ? 'Снять все' : 'Выбрать все';
     });
+
+    
   }
+
+  export async function quickSellItem(assetid, appid, contextid, sessionid){
+  const priceText = document.querySelector(".inventory_iteminfo[style*='z-index: 1'] .item_market_actions").innerText;
+  // Улучшенная регулярка для цен с учетом разных форматов
+  const priceMatch = priceText.match(/(\d+[\.,]\d{2})|(\d+)/);
+ 
+
+  if (!priceMatch) {
+    console.error('Цена не найдена');
+    return null;
+  }
+
+  const currentPrice = parseFloat(priceMatch[0].replace(',', '.'));
+  console.log(currentPrice)
+  // 2. Создаем кнопку
+  const button = document.createElement('button');
+  button.style.cssText = `
+    padding: 8px 16px;
+    background: linear-gradient(to bottom, #5cb85c, #449d44);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+  `;
+  button.innerHTML = 'Быстрая продажа';
+
+  // 3. Обработчик клика
+  button.addEventListener('click', async () => {
+    try {
+
+      button.disabled = true;
+      button.style.opacity = '0.7';
+      button.textContent = 'Продаем...';
+
+      // Устанавливаем цену на 0.01 ниже текущей
+      const sellPrice = ((currentPrice - 0.01)*86.97).toFixed(0);
+
+      // 4. Формируем запрос
+      const params = new URLSearchParams();
+      params.append('sessionid', sessionid);
+      params.append('appid', appid);
+      params.append('contextid', contextid);
+      params.append('assetid', assetid);
+      params.append('amount', '1');
+      params.append('price', sellPrice);
+
+      // 5. Отправляем запрос
+      const response = await fetch('https://steamcommunity.com/market/sellitem/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+        },
+        body: params
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        button.textContent = '✓ Продано!';
+        button.style.background = 'linear-gradient(to bottom, #5cb85c, #449d44)';
+        setTimeout(() => button.remove(), 2000);
+      } else {
+        throw new Error(result.message || 'Ошибка продажи');
+      }
+    } catch (error) {
+      console.error('Ошибка продажи:', error);
+      button.textContent = 'Ошибка! Повторить';
+      button.style.background = 'linear-gradient(to bottom, #d9534f, #c9302c)';
+      button.disabled = false;
+      button.style.opacity = '1';
+    }
+  });
+
+  // 6. Добавляем кнопку в интерфейс
+  const actionsContainer = document.querySelector(".inventory_iteminfo[style*='z-index: 1'] .item_market_actions");
+  if (actionsContainer) {
+    actionsContainer.appendChild(button);
+  }
+  return button;
+}
   
