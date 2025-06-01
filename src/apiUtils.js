@@ -92,7 +92,7 @@ export async function displayItemFloatInfo(marketListingUrl) {
           z-index: 10;
         `;
         floatInfoElement.innerHTML = `
-          Float: ${floatData.float.toFixed(6)} | Seed: ${floatData.seed}
+          Float: ${floatData.float.toFixed(6)} | Pattern: ${floatData.seed}
         `;
 
 
@@ -113,7 +113,7 @@ export async function displayItemFloatInfo(marketListingUrl) {
   }
 }
 
-async function fetchFloatData(inspectLink) {
+export async function fetchFloatData(inspectLink) {
   return new Promise((resolve) => {
     chrome.runtime.sendMessage(
       { action: "getFloat", inspectLink },
@@ -121,7 +121,8 @@ async function fetchFloatData(inspectLink) {
         if (response?.success && response.float !== undefined && response.seed !== undefined) {
           resolve({
             float: response.float,
-            seed: response.seed
+            seed: response.seed,
+            fullItemName: response.full_item_name
           });
         } else {
           console.error('Float API error:', response?.error);

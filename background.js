@@ -31,7 +31,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({
           success: true,
           float: data.iteminfo.floatvalue,
-          seed: data.iteminfo.paintseed
+          seed: data.iteminfo.paintseed,
+          full_item_name: data.iteminfo.full_item_name
         });
       })
       .catch(error => {

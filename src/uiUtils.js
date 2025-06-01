@@ -225,11 +225,42 @@ export function createControlPanel() {
     
   }
 
-  export async function quickSellItem(assetid, appid, contextid, sessionid){
-  const priceText = document.querySelector(".inventory_iteminfo[style*='z-index: 1'] .item_market_actions").innerText;
+  export  function inventoryFLoatItem(container, itemInfo){
+    container.querySelectorAll(".floatInfo").forEach(e => e.remove());
+    const span = document.createElement("span")
+    span.className = 'floatInfo'
+    span.style = `
+    color: green;
+    font-weight: bold`
+    span.innerHTML = `<br> Float: ${itemInfo.float.toFixed(6)} | Pattern: ${itemInfo.seed}`
+    container.appendChild(span);
+  }
+
+
+  export async function quickSellItem(assetid, appid, contextid, sessionid, fullItemName){
+  const marketLinkItem = `https://steamcommunity.com/market/listings/${appid}/${fullItemName}`
+  const hyperLinkItem = document.createElement('a')
+  hyperLinkItem.className = 'link'
+  hyperLinkItem.href = marketLinkItem
+  hyperLinkItem.innerHTML = `Найти на торговой площадке`
+
+
+  const container = document.querySelector(".inventory_iteminfo[style*='z-index: 1']")
+  const priceText = container.querySelector(".item_market_actions").innerText;
   // Улучшенная регулярка для цен с учетом разных форматов
   const priceMatch = priceText.match(/(\d+[\.,]\d{2})|(\d+)/);
- 
+  
+  const response = await fetch(marketLinkItem);
+    if (!response.ok) throw new Error('❌ Ошибка загрузки страницы предмета');
+    const html = await response.text();
+
+  const item_nameid = html.match(/(?<=Market_LoadOrderSpread\( )\d+/);
+  const histogramLink = `https://steamcommunity.com/market/itemordershistogram?country=RU&language=english&currency=5&item_nameid=${item_nameid}&two_factor=0`
+  const histogramResponse = await fetch(histogramLink)
+  const histogramResponseJson = await histogramResponse.json()
+  const instantPrice =  histogramResponseJson.highest_buy_order;
+  const firstBuyOrder = (instantPrice/100).toFixed(2)
+  
 
   if (!priceMatch) {
     console.error('Цена не найдена');
@@ -238,8 +269,73 @@ export function createControlPanel() {
 
   const currentPrice = parseFloat(priceMatch[0].replace(',', '.'));
   console.log(currentPrice)
-  // 2. Создаем кнопку
+  document.querySelectorAll(".fastSellButton").forEach(e => e.remove());
+  document.querySelectorAll(".instantSellButton").forEach(e => e.remove());
+  // 2. Создаем кнопки
+  const instantSellButton = document.createElement('button');
+  instantSellButton.className = 'instantSellButton'
+  instantSellButton.style.cssText = `
+    padding: 8px 16px;
+    background: linear-gradient(to bottom, #5cb85c, #449d44);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+  `;
+  instantSellButton.innerHTML = `Мгновенная продажа ${firstBuyOrder} рублей`;
+
+  instantSellButton.addEventListener('click', async () => {
+    try {
+
+      instantSellButton.disabled = true;
+      instantSellButton.style.opacity = '0.7';
+      instantSellButton.textContent = 'Продаем...';
+
+      // Устанавливаем цену на 0.01 ниже текущей
+      const sellPrice = ((firstBuyOrder)*86.97).toFixed(0);
+
+      // 4. Формируем запрос
+      const params = new URLSearchParams();
+      params.append('sessionid', sessionid);
+      params.append('appid', appid);
+      params.append('contextid', contextid);
+      params.append('assetid', assetid);
+      params.append('amount', '1');
+      params.append('price', sellPrice);
+
+      // 5. Отправляем запрос
+      const response = await fetch('https://steamcommunity.com/market/sellitem/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+        },
+        body: params
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        instantSellButton.textContent = '✓ Продано!';
+        instantSellButton.style.background = 'linear-gradient(to bottom, #5cb85c, #449d44)';
+        setTimeout(() => button.remove(), 2000);
+      } else {
+        throw new Error(result.message || 'Ошибка продажи');
+      }
+    } catch (error) {
+      console.error('Ошибка продажи:', error);
+      instantSellButton.textContent = 'Ошибка! Повторить';
+      instantSellButton.style.background = 'linear-gradient(to bottom, #d9534f, #c9302c)';
+      instantSellButton.disabled = false;
+      instantSellButton.style.opacity = '1';
+    }
+  });
+
   const button = document.createElement('button');
+  button.className = 'fastSellButton'
   button.style.cssText = `
     padding: 8px 16px;
     background: linear-gradient(to bottom, #5cb85c, #449d44);
@@ -302,9 +398,10 @@ export function createControlPanel() {
   });
 
   // 6. Добавляем кнопку в интерфейс
-  const actionsContainer = document.querySelector(".inventory_iteminfo[style*='z-index: 1'] .item_market_actions");
+  const actionsContainer = container.querySelector(".item_market_actions");
   if (actionsContainer) {
     actionsContainer.appendChild(button);
+    actionsContainer.appendChild(instantSellButton)
   }
   return button;
 }

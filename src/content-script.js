@@ -1,5 +1,5 @@
-import { waitForItems, getSteamID64, getInventory, getPrice, displayItemFloatInfo } from './apiUtils.js';
-import { createControlPanel, createSortButton, createResetButton, createTypeFilter, createResetCacheButton, addFloatToMarketPage, quickSellItem} from './uiUtils.js';
+import { waitForItems, getSteamID64, getInventory, getPrice, displayItemFloatInfo, fetchFloatData } from './apiUtils.js';
+import { createControlPanel, createSortButton, createResetButton, createTypeFilter, createResetCacheButton, addFloatToMarketPage, quickSellItem, inventoryFLoatItem } from './uiUtils.js';
 import { renderPriceForHolder, renderPricesOnPage, calculateTotalPrice } from './utils.js';
 
 (async () => {
@@ -7,8 +7,8 @@ import { renderPriceForHolder, renderPricesOnPage, calculateTotalPrice } from '.
     console.log('🟢 Скрипт запущен');
     const appId = 730;
     const contextId = 2;
-    
-    
+
+
 
     const holders = await waitForItems();
     if (!holders.length) {
@@ -62,12 +62,8 @@ import { renderPriceForHolder, renderPricesOnPage, calculateTotalPrice } from '.
     createResetCacheButton(controlPanel, priceCache);
     createTypeFilter(typeMap, controlPanel);
 
-    setTimeout(() => {
-      const sessionid = document.cookie.match(/sessionid=([^;]+)/)?.[1];
-      const assetid = document.querySelector('.activeInfo').id.split('_')[2]
-      quickSellItem(assetid, appId, contextId, sessionid)
-    }, 200);
-  
+
+
 
     // 💲 Общая стоимость
     let totalPrice = calculateTotalPrice(itemsWithPrices);
@@ -76,6 +72,41 @@ import { renderPriceForHolder, renderPricesOnPage, calculateTotalPrice } from '.
     controlPanel.appendChild(totalPriceDiv);
 
     console.log('🏁 Интерфейс управления добавлен');
+
+    const targetNode = document.body; // или конкретный контейнер
+
+    // Конфигурация наблюдения
+    const config = {
+      attributes: true,
+      subtree: true,
+      attributeFilter: ['class']
+    };
+
+    const callback = async function (mutationsList, observer) {
+      for (const mutation of mutationsList) {
+        if (
+          mutation.type === 'attributes' &&
+          mutation.attributeName === 'class'
+        ) {
+
+          const target = mutation.target;
+          if (target.classList.contains('activeInfo')) {
+            const sessionid = document.cookie.match(/sessionid=([^;]+)/)?.[1];
+            const assetid = document.querySelector('.activeInfo').id.split('_')[2]
+            console.log('Добавлен класс .activeInfo на элемент:', target);
+            const selectedContainer = document.querySelector(".inventory_iteminfo[style*='z-index: 1']")
+            const linkItem = selectedContainer.querySelector("a[href*='rungame']").href
+            const itemInfo = await fetchFloatData(linkItem)
+            inventoryFLoatItem(selectedContainer.querySelector('.descriptor[style]'), itemInfo)
+            quickSellItem(assetid, appId, contextId, sessionid, itemInfo.fullItemName)
+          }
+        }
+      }
+    };
+
+    const observer = new MutationObserver(callback);
+
+    observer.observe(targetNode, config);
 
     // 🧠 MutationObserver для подгружаемых страниц
     const containers = document.querySelectorAll('.inventory_ctn');
