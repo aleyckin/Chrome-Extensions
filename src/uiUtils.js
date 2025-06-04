@@ -275,7 +275,7 @@ export function createControlPanel() {
   const instantSellButton = document.createElement('button');
   instantSellButton.className = 'instantSellButton'
   instantSellButton.style.cssText = `
-    padding: 8px 16px;
+    padding: 4px 10px;
     background: linear-gradient(to bottom, #5cb85c, #449d44);
     color: white;
     border: none;
@@ -337,7 +337,7 @@ export function createControlPanel() {
   const button = document.createElement('button');
   button.className = 'fastSellButton'
   button.style.cssText = `
-    padding: 8px 16px;
+    padding: 4px 10px;
     background: linear-gradient(to bottom, #5cb85c, #449d44);
     color: white;
     border: none;

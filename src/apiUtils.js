@@ -50,6 +50,42 @@ export async function getPrice(url, priceCache) {
 }
 
 
+export async function displayMargin() {
+  
+  const priceText = document.querySelectorAll(".market_commodity_orders_header_promote")[1].innerHTML
+  const priceMatch = priceText.match(/(\d+[\.,]\d{2})|(\d+)/);
+  const autobuyPrice = parseFloat(priceMatch[0].replace(',', '.'));
+  const items = document.querySelectorAll('#searchResultsRows > .market_listing_row');
+  for (const index in items) {
+      const item = items[index]
+      const itemPriceText = item.querySelector(".market_listing_price_with_fee").innerHTML
+      const buyMatch = itemPriceText.match(/(\d+[\.,]\d{2})|(\d+)/);
+      const containerPrice = parseFloat(buyMatch[0].replace(',', '.'));
+      const margin = containerPrice - autobuyPrice
+      const percentage = margin/autobuyPrice*100
+      
+      const marginElement = document.createElement('div');
+        marginElement.className = 'margin';
+        marginElement.style.cssText = `
+          position: absolute;
+          bottom: 5px;
+          left: 300px;
+          color: white;
+          padding: 2px 5px;
+          font-size: 11px;
+          border-radius: 3px;
+          z-index: 10;
+        `;
+        marginElement.innerHTML = `
+          Маржа: ${margin.toFixed(2)} | Процент: ${percentage.toFixed(2)}
+        `;
+
+         item.style.position = 'relative';
+        item.appendChild(marginElement);
+  }
+  
+}
+
 
 export async function displayItemFloatInfo(marketListingUrl) {
   try {
@@ -70,14 +106,13 @@ export async function displayItemFloatInfo(marketListingUrl) {
         if (!inspectLinkElement) continue;
 
         const inspectLink = inspectLinkElement.getAttribute('href');
-        console.log(inspectLink);
         if (!inspectLink) continue;
 
 
         const floatData = await fetchFloatData(inspectLink);
         if (!floatData) continue;
 
-        console.log(`Float: ${floatData.float.toFixed(6)} | Seed: ${floatData.seed}`)
+        
 
         const floatInfoElement = document.createElement('div');
         floatInfoElement.className = 'float-info';

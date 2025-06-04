@@ -1,4 +1,4 @@
-import { waitForItems, getSteamID64, getInventory, getPrice, displayItemFloatInfo } from './apiUtils.js';
+import { waitForItems, getSteamID64, getInventory, getPrice, displayItemFloatInfo, displayMargin } from './apiUtils.js';
 import { createControlPanel, createSortButton, createResetButton, createTypeFilter, createResetCacheButton, addFloatToMarketPage} from './uiUtils.js';
 import { renderPriceForHolder, renderPricesOnPage, calculateTotalPrice } from './utils.js';
 
@@ -9,6 +9,9 @@ import { renderPriceForHolder, renderPricesOnPage, calculateTotalPrice } from '.
     const contextId = 2;
 
     addFloatToMarketPage();
+
+    await new Promise((r) => setTimeout(r, 1000))
+    displayMargin();
 
 
   } catch (err) {
